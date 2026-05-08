@@ -38,6 +38,7 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 - Expense and payment writes must be atomic; partial writes must be rolled back
 - Handle Discord 429 rate-limit responses with exponential backoff
 - If the database is unreachable, respond with a user-friendly error embed and do not crash
+- All entity IDs must use ULID (`python-ulid`) instead of UUID v4 — ULIDs are time-ordered and keep B-tree indexes compact; UUID v4 is random and causes index fragmentation
 
 ## External Dependencies
 
