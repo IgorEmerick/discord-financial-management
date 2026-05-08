@@ -52,10 +52,21 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 
 ## Setup
 
+**Local:**
 ```bash
 source .venv/bin/activate
-pip install -r requirements.txt   # once requirements.txt exists
+pip install -r requirements.lock
+cp .env.example .env   # then fill in DISCORD_BOT_TOKEN
+python src/main.py
 ```
+
+**Docker:**
+```bash
+cp .env.example .env   # then fill in DISCORD_BOT_TOKEN (DATABASE_URL is overridden by compose)
+docker compose up --build
+```
+
+The compose stack runs two services: `app` (the bot) and `db` (PostgreSQL 16). The `DATABASE_URL` in `.env` is ignored by compose — it uses the internal `db` service URL instead. The app waits for the database health check before starting.
 
 ## Lint & Format
 
