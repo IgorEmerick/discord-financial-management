@@ -198,14 +198,16 @@ sequenceDiagram
 
     User->>Discord: /pay [creditor?] [debtor?] [month]
     Discord->>Bot: Interaction Payload
+    Bot->>Database: SELECT expenses WHERE destination_month = [month]
+    Database-->>Bot: Expense records
+    Bot->>Database: SELECT payments WHERE month = [month]
+    Database-->>Bot: Payment records
+    Bot->>Bot: Compute net balances from expenses and payments
     alt Creditor and debtor specified
-        Bot->>Database: SELECT balance for creditor-debtor pair
-        Database-->>Bot: Specific balance
+        Bot->>Bot: Filter settlement for creditor-debtor pair
     else No creditor/debtor specified
-        Bot->>Database: SELECT all outstanding balances for month
-        Database-->>Bot: All balances
+        Bot->>Bot: Settle all outstanding creditor-debtor pairs
     end
-    Bot->>Bot: Validate payment(s) against balance
     Bot->>Database: INSERT payment record(s)
     Database-->>Bot: Success / Error
     Bot->>Discord: Send settlement confirmation embed
@@ -376,3 +378,4 @@ sequenceDiagram
 |---------|------|---------|---------|
 | v1.0.0 | 2025-05-07 | Initial documentation: add expense, monthly report, register payment | Documentation Agent |
 | v1.1.0 | 2025-05-07 | Added edit expense (FR-05) and delete expense (FR-06) features; removed NFR-01 (Performance), NFR-02 (Availability), NFR-04 (Scalability) as deferred to future release; simplified all sequence diagrams to treat the bot as a single entity; updated expense data contract to include `id` and `updated_at` fields; added edit expense request contract (section 5.2) | Documentation Agent |
+| v1.1.1 | 2025-05-07 | Fixed `/pay` sequence diagram: replaced non-existent `balance` entity queries with correct queries against `Expense` and `Payment` entities; balance computation moved to bot in-memory logic | Documentation Agent |
