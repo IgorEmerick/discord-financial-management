@@ -21,6 +21,7 @@ It is designed to solve the common problem of splitting costs among groups (room
 - Generation of monthly financial reports, including itemized expenses and final balance (creditors vs. debtors)
 - Registration of payments between members (full or partial settlement)
 - Automatic settlement of all outstanding credits when no specific creditor/debtor is specified
+- In-Discord help reference listing all available commands, parameters, and usage examples
 
 #### Excluded
 
@@ -46,6 +47,7 @@ It is designed to solve the common problem of splitting costs among groups (room
 | FR-07 | The bot must generate a monthly financial report containing all registered expenses for the requested month and a final balance listing all creditor-debtor relationships. |
 | FR-08 | The bot must allow a user to register a payment from a specific creditor to a specific debtor for a given month. |
 | FR-09 | If no creditor and no debtor are specified during payment registration, the bot must automatically settle all outstanding credits for the month. |
+| FR-10 | The bot must provide a `/help` command that lists all available commands with their descriptions, parameters, and usage examples. |
 
 ### 2.2 Non-Functional Requirements
 
@@ -216,6 +218,30 @@ sequenceDiagram
 
 ---
 
+### 3.6 Help (`/help`)
+
+**Macro steps:**
+
+1. User invokes the `/help` command in a Discord channel.
+2. The bot receives the interaction payload from the Discord Gateway.
+3. The bot assembles the help embed from its static command registry (no database access required).
+4. The bot responds with a formatted embed listing all available commands, their parameters, and usage examples.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Discord
+    participant Bot
+
+    User->>Discord: /help
+    Discord->>Bot: Interaction Payload
+    Bot->>Bot: Assemble command list from static registry
+    Bot->>Discord: Send help embed (commands + descriptions + usage)
+    Discord-->>User: Help reference 📖
+```
+
+---
+
 ## 4. Data Sources
 
 | Source | Type | Endpoint / Location | Authentication | Rate Limit / Notes |
@@ -379,3 +405,4 @@ sequenceDiagram
 | v1.0.0 | 2025-05-07 | Initial documentation: add expense, monthly report, register payment | Documentation Agent |
 | v1.1.0 | 2025-05-07 | Added edit expense (FR-05) and delete expense (FR-06) features; removed NFR-01 (Performance), NFR-02 (Availability), NFR-04 (Scalability) as deferred to future release; simplified all sequence diagrams to treat the bot as a single entity; updated expense data contract to include `id` and `updated_at` fields; added edit expense request contract (section 5.2) | Documentation Agent |
 | v1.1.1 | 2025-05-07 | Fixed `/pay` sequence diagram: replaced non-existent `balance` entity queries with correct queries against `Expense` and `Payment` entities; balance computation moved to bot in-memory logic | Documentation Agent |
+| v1.2.0 | 2025-05-07 | Added `/help` command (FR-10): scope, functional requirement, data flow section (3.6) with sequence diagram; no data contract added as the command is stateless and requires no database access | Documentation Agent |
