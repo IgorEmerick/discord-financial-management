@@ -7,4 +7,3 @@ select = ["E", "F", "I"]
 
 [tool.ruff.format]
 indent-style = "space"
-indent-width = 2
