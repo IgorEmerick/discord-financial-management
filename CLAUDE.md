@@ -40,6 +40,7 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 - If the database is unreachable, respond with a user-friendly error embed and do not crash
 - All entity IDs must use ULID (`python-ulid`) instead of UUID v4 — ULIDs are time-ordered and keep B-tree indexes compact; UUID v4 is random and causes index fragmentation
 - Private helper methods (`_utcnow`, `_new_id`, etc.) must be defined as instance methods inside the class, not as module-level functions referenced in `__init__` signatures; tests patch them via `unittest.mock.patch.object`
+- Dependency injection is managed by `dependency-injector` via `src/container.py`; the `Container` class declares the full dependency graph using `providers.Resource` (async lifecycle), `providers.Singleton`, and `providers.Factory`
 
 ## External Dependencies
 
