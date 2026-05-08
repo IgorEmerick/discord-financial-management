@@ -11,6 +11,8 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 | Command | Description |
 |---------|-------------|
 | `/add-expense` | Register a shared expense (category, description, value, payer, participants, month) |
+| `/edit-expense` | Edit any field of a previously registered expense by its ID |
+| `/delete-expense` | Delete a previously registered expense by its ID |
 | `/report` | Generate a monthly report with itemized expenses and creditor/debtor balances |
 | `/pay` | Register a payment between a creditor and debtor; if both are omitted, settles all outstanding balances for the month |
 
@@ -22,7 +24,7 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 
 ### Data Models
 
-**Expense:** `id`, `guild_id`, `channel_id`, `category`, `description`, `value`, `paying_person` (Discord user ID), `involved_people` (Discord user ID list), `destination_month` (YYYY-MM), `created_at`
+**Expense:** `id`, `guild_id`, `channel_id`, `category`, `description`, `value`, `paying_person` (Discord user ID), `involved_people` (Discord user ID list), `destination_month` (YYYY-MM), `created_at`, `updated_at`
 
 **Payment:** `id`, `guild_id`, `month`, `creditor`, `debtor`, `amount`, `paid_at`
 
@@ -34,7 +36,7 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 - All commands and their resolved parameters (including inferred values) must be logged
 - Expense and payment writes must be atomic; partial writes must be rolled back
 - Handle Discord 429 rate-limit responses with exponential backoff
-- Responses must be delivered within 3 seconds under normal load
+- If the database is unreachable, respond with a user-friendly error embed and do not crash
 
 ## External Dependencies
 

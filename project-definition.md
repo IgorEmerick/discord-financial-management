@@ -16,6 +16,8 @@ It is designed to solve the common problem of splitting costs among groups (room
 
 - Registration of shared expenses with metadata (category, description, value, payer, participants, target month)
 - Automatic inference of payer, participants, and target month when not explicitly provided
+- Editing of previously registered expenses
+- Deletion of previously registered expenses
 - Generation of monthly financial reports, including itemized expenses and final balance (creditors vs. debtors)
 - Registration of payments between members (full or partial settlement)
 - Automatic settlement of all outstanding credits when no specific creditor/debtor is specified
@@ -26,7 +28,6 @@ It is designed to solve the common problem of splitting costs among groups (room
 - Persistent multi-server data isolation (behavior across multiple guilds is out of scope for v1.0.0)
 - Currency conversion or multi-currency support
 - User authentication beyond Discord's native identity system
-- Expense editing or deletion after registration
 
 ---
 
@@ -40,21 +41,20 @@ It is designed to solve the common problem of splitting costs among groups (room
 | FR-02 | If no **paying person** is specified, the bot must automatically assign the command author as the payer. |
 | FR-03 | If no **involved people** are specified, the bot must automatically include all members currently in the channel as expense participants. |
 | FR-04 | If no **destination month** is specified, the bot must default to the current calendar month. |
-| FR-05 | The bot must generate a monthly financial report containing all registered expenses for the requested month and a final balance listing all creditor-debtor relationships. |
-| FR-06 | The bot must allow a user to register a payment from a specific creditor to a specific debtor for a given month. |
-| FR-07 | If no creditor and no debtor are specified during payment registration, the bot must automatically settle all outstanding credits for the month. |
+| FR-05 | The bot must allow a user to edit any field of a previously registered expense by its ID. |
+| FR-06 | The bot must allow a user to delete a previously registered expense by its ID. |
+| FR-07 | The bot must generate a monthly financial report containing all registered expenses for the requested month and a final balance listing all creditor-debtor relationships. |
+| FR-08 | The bot must allow a user to register a payment from a specific creditor to a specific debtor for a given month. |
+| FR-09 | If no creditor and no debtor are specified during payment registration, the bot must automatically settle all outstanding credits for the month. |
 
 ### 2.2 Non-Functional Requirements
 
 | ID | Category | Description |
 |----|----------|-------------|
-| NFR-01 | Performance | Command responses must be delivered within **3 seconds** under normal load. |
-| NFR-02 | Availability | The bot must maintain **99% uptime** during active hours. |
-| NFR-03 | Fault Tolerance | If the database is unreachable, the bot must respond with a user-friendly error message and not crash. |
-| NFR-04 | Scalability | The bot must support at least **10 concurrent Discord servers** in v1.0.0. |
-| NFR-05 | Data Integrity | Expense and payment records must be persisted atomically; partial writes must be rolled back. |
-| NFR-06 | Auditability | All commands and their resolved parameters (including inferred values) must be logged. |
-| NFR-07 | Usability | All bot responses must use Discord embeds with clear formatting, including success/error states. |
+| NFR-01 | Fault Tolerance | If the database is unreachable, the bot must respond with a user-friendly error message and not crash. |
+| NFR-02 | Data Integrity | Expense and payment records must be persisted atomically; partial writes must be rolled back. |
+| NFR-03 | Auditability | All commands and their resolved parameters (including inferred values) must be logged. |
+| NFR-04 | Usability | All bot responses must use Discord embeds with clear formatting, including success/error states. |
 
 ---
 
@@ -74,27 +74,84 @@ It is designed to solve the common problem of splitting costs among groups (room
 ```mermaid
 sequenceDiagram
     actor User
-    participant Discord Gateway
-    participant Bot Handler
-    participant Resolver Service
+    participant Discord
+    participant Bot
     participant Database
 
-    User->>Discord Gateway: /add-expense [category] [description] [value] [payer?] [participants?] [month?]
-    Discord Gateway->>Bot Handler: Interaction Payload
-    Bot Handler->>Resolver Service: Resolve optional fields
-    Resolver Service->>Discord Gateway: Fetch channel members (if participants omitted)
-    Discord Gateway-->>Resolver Service: Member list
-    Resolver Service-->>Bot Handler: Resolved fields (payer, participants, month)
-    Bot Handler->>Bot Handler: Validate inputs
-    Bot Handler->>Database: INSERT expense record
-    Database-->>Bot Handler: Success / Error
-    Bot Handler->>Discord Gateway: Send confirmation embed
-    Discord Gateway-->>User: Expense registered ✅
+    User->>Discord: /add-expense [category] [description] [value] [payer?] [participants?] [month?]
+    Discord->>Bot: Interaction Payload
+    Bot->>Discord: Fetch channel members (if participants omitted)
+    Discord-->>Bot: Member list
+    Bot->>Bot: Resolve optional fields and validate inputs
+    Bot->>Database: INSERT expense record
+    Database-->>Bot: Success / Error
+    Bot->>Discord: Send confirmation embed
+    Discord-->>User: Expense registered ✅
 ```
 
 ---
 
-### 3.2 Request Monthly Report (`/report`)
+### 3.2 Edit Expense (`/edit-expense`)
+
+**Macro steps:**
+
+1. User invokes the `/edit-expense` command with the expense ID and the fields to update.
+2. The bot receives the interaction payload from the Discord Gateway.
+3. The bot queries the database to verify the expense exists.
+4. The bot validates the new field values.
+5. The bot updates the expense record in the database.
+6. The bot responds with a confirmation embed showing the updated values.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Discord
+    participant Bot
+    participant Database
+
+    User->>Discord: /edit-expense [id] [field: new_value ...]
+    Discord->>Bot: Interaction Payload
+    Bot->>Database: SELECT expense WHERE id = [id]
+    Database-->>Bot: Expense record / Not found
+    Bot->>Bot: Validate new field values
+    Bot->>Database: UPDATE expense SET [fields]
+    Database-->>Bot: Success / Error
+    Bot->>Discord: Send confirmation embed (updated values)
+    Discord-->>User: Expense updated ✏️
+```
+
+---
+
+### 3.3 Delete Expense (`/delete-expense`)
+
+**Macro steps:**
+
+1. User invokes the `/delete-expense` command with the expense ID.
+2. The bot receives the interaction payload from the Discord Gateway.
+3. The bot queries the database to verify the expense exists.
+4. The bot deletes the expense record from the database.
+5. The bot responds with a deletion confirmation embed.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Discord
+    participant Bot
+    participant Database
+
+    User->>Discord: /delete-expense [id]
+    Discord->>Bot: Interaction Payload
+    Bot->>Database: SELECT expense WHERE id = [id]
+    Database-->>Bot: Expense record / Not found
+    Bot->>Database: DELETE expense WHERE id = [id]
+    Database-->>Bot: Success / Error
+    Bot->>Discord: Send deletion confirmation embed
+    Discord-->>User: Expense deleted 🗑️
+```
+
+---
+
+### 3.4 Request Monthly Report (`/report`)
 
 **Macro steps:**
 
@@ -107,24 +164,22 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor User
-    participant Discord Gateway
-    participant Bot Handler
-    participant Balance Calculator
+    participant Discord
+    participant Bot
     participant Database
 
-    User->>Discord Gateway: /report [month]
-    Discord Gateway->>Bot Handler: Interaction Payload
-    Bot Handler->>Database: SELECT expenses WHERE month = [month]
-    Database-->>Bot Handler: Expense records
-    Bot Handler->>Balance Calculator: Compute net balances per person
-    Balance Calculator-->>Bot Handler: Creditor / Debtor map
-    Bot Handler->>Discord Gateway: Send report embed (expenses + balance)
-    Discord Gateway-->>User: Monthly Report 📊
+    User->>Discord: /report [month]
+    Discord->>Bot: Interaction Payload
+    Bot->>Database: SELECT expenses WHERE month = [month]
+    Database-->>Bot: Expense records
+    Bot->>Bot: Compute net balances and creditor/debtor map
+    Bot->>Discord: Send report embed (expenses + balance)
+    Discord-->>User: Monthly Report 📊
 ```
 
 ---
 
-### 3.3 Register Payment (`/pay`)
+### 3.5 Register Payment (`/pay`)
 
 **Macro steps:**
 
@@ -137,26 +192,24 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor User
-    participant Discord Gateway
-    participant Bot Handler
-    participant Balance Calculator
+    participant Discord
+    participant Bot
     participant Database
 
-    User->>Discord Gateway: /pay [creditor?] [debtor?] [month]
-    Discord Gateway->>Bot Handler: Interaction Payload
+    User->>Discord: /pay [creditor?] [debtor?] [month]
+    Discord->>Bot: Interaction Payload
     alt Creditor and debtor specified
-        Bot Handler->>Database: SELECT balance for creditor-debtor pair
-        Database-->>Bot Handler: Specific balance
+        Bot->>Database: SELECT balance for creditor-debtor pair
+        Database-->>Bot: Specific balance
     else No creditor/debtor specified
-        Bot Handler->>Database: SELECT all outstanding balances for month
-        Database-->>Bot Handler: All balances
+        Bot->>Database: SELECT all outstanding balances for month
+        Database-->>Bot: All balances
     end
-    Bot Handler->>Balance Calculator: Validate payment against balance
-    Balance Calculator-->>Bot Handler: Validated payment(s)
-    Bot Handler->>Database: INSERT payment record(s)
-    Database-->>Bot Handler: Success / Error
-    Bot Handler->>Discord Gateway: Send settlement confirmation embed
-    Discord Gateway-->>User: Payment registered 💸
+    Bot->>Bot: Validate payment(s) against balance
+    Bot->>Database: INSERT payment record(s)
+    Database-->>Bot: Success / Error
+    Bot->>Discord: Send settlement confirmation embed
+    Discord-->>User: Payment registered 💸
 ```
 
 ---
@@ -175,10 +228,11 @@ sequenceDiagram
 
 ### 5.1 Expense Record
 
-**Command:** `/add-expense`
+**Commands:** `/add-expense`, `/edit-expense`, `/delete-expense`
 
 | Field | Type | Required | Validation | Default |
 |-------|------|----------|------------|---------|
+| `id` | `string` | ✅ (auto) | Unique identifier, generated on creation | Auto-generated |
 | `category` | `string` | ✅ | Non-empty, max 50 chars | — |
 | `description` | `string` | ✅ | Non-empty, max 200 chars | — |
 | `value` | `number` | ✅ | Positive decimal, max 2 decimal places | — |
@@ -188,6 +242,7 @@ sequenceDiagram
 | `guild_id` | `string` | ✅ (auto) | Discord guild snowflake | From interaction context |
 | `channel_id` | `string` | ✅ (auto) | Discord channel snowflake | From interaction context |
 | `created_at` | `datetime` | ✅ (auto) | ISO 8601 UTC | Server timestamp |
+| `updated_at` | `datetime` | ✅ (auto) | ISO 8601 UTC; updated on every edit | Server timestamp |
 
 **Example JSON (persisted):**
 
@@ -202,13 +257,42 @@ sequenceDiagram
   "paying_person": "111222333",
   "involved_people": ["111222333", "444555666", "777888999"],
   "destination_month": "2025-05",
-  "created_at": "2025-05-07T21:00:00Z"
+  "created_at": "2025-05-07T21:00:00Z",
+  "updated_at": "2025-05-07T21:00:00Z"
 }
 ```
 
 ---
 
-### 5.2 Monthly Report Response
+### 5.2 Edit Expense Request
+
+**Command:** `/edit-expense`
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `id` | `string` | ✅ | Must reference an existing expense |
+| `category` | `string` | ❌ | Non-empty, max 50 chars |
+| `description` | `string` | ❌ | Non-empty, max 200 chars |
+| `value` | `number` | ❌ | Positive decimal, max 2 decimal places |
+| `paying_person` | `string` (Discord User ID) | ❌ | Must be a valid Discord member |
+| `involved_people` | `string[]` (Discord User IDs) | ❌ | Each must be a valid channel member |
+| `destination_month` | `string` | ❌ | Format: `YYYY-MM` |
+
+> At least one editable field must be provided alongside the `id`.
+
+**Example JSON (request payload):**
+
+```json
+{
+  "id": "exp_01J3KXYZ",
+  "description": "Pizza night + drinks",
+  "value": 102.00
+}
+```
+
+---
+
+### 5.3 Monthly Report Response
 
 **Command:** `/report`
 
@@ -248,7 +332,7 @@ sequenceDiagram
 
 ---
 
-### 5.3 Payment Record
+### 5.4 Payment Record
 
 **Command:** `/pay`
 
@@ -290,4 +374,5 @@ sequenceDiagram
 
 | Version | Date | Changes | Authors |
 |---------|------|---------|---------|
-| v1.0.0 | 2025-05-07 | Initial documentation based on core feature set: add expense, monthly report, register payment | Documentation Agent |
+| v1.0.0 | 2025-05-07 | Initial documentation: add expense, monthly report, register payment | Documentation Agent |
+| v1.1.0 | 2025-05-07 | Added edit expense (FR-05) and delete expense (FR-06) features; removed NFR-01 (Performance), NFR-02 (Availability), NFR-04 (Scalability) as deferred to future release; simplified all sequence diagrams to treat the bot as a single entity; updated expense data contract to include `id` and `updated_at` fields; added edit expense request contract (section 5.2) | Documentation Agent |
