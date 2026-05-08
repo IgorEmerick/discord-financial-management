@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from datetime import UTC, datetime
 
 from ulid import ULID
@@ -9,26 +8,16 @@ from domain.services import compute_net_balances, compute_settlements
 from repositories.protocols import ExpenseRepository, PaymentRepository
 
 
-def _utcnow() -> datetime:
-  return datetime.now(UTC)
-
-
-def _new_id() -> str:
-  return str(ULID())
-
-
 class RegisterPaymentUseCase:
-  def __init__(
-    self,
-    expense_repo: ExpenseRepository,
-    payment_repo: PaymentRepository,
-    clock: Callable[[], datetime] = _utcnow,
-    id_generator: Callable[[], str] = _new_id,
-  ) -> None:
+  def __init__(self, expense_repo: ExpenseRepository, payment_repo: PaymentRepository) -> None:
     self._expense_repo = expense_repo
     self._payment_repo = payment_repo
-    self._clock = clock
-    self._id_generator = id_generator
+
+  def _utcnow(self) -> datetime:
+    return datetime.now(UTC)
+
+  def _new_id(self) -> str:
+    return str(ULID())
 
   async def execute(
     self,
@@ -52,11 +41,11 @@ class RegisterPaymentUseCase:
       if not settlements:
         raise NothingToSettleError(month)
 
-    now = self._clock()
+    now = self._utcnow()
     payments = []
     for settlement in settlements:
       payment = Payment(
-        id=self._id_generator(),
+        id=self._new_id(),
         guild_id=guild_id,
         month=month,
         creditor=settlement.creditor,

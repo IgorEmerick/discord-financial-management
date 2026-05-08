@@ -1,11 +1,12 @@
 from datetime import UTC, datetime
 from decimal import Decimal
+from unittest.mock import patch
 
 import pytest
 
+from domain.entities import Expense
 from domain.errors import NothingToSettleError
 from fakes.repositories import FakeExpenseRepository, FakePaymentRepository
-from use_cases.add_expense import AddExpenseUseCase
 from use_cases.register_payment import RegisterPaymentUseCase
 
 FIXED_NOW = datetime(2025, 5, 7, 10, 0, 0, tzinfo=UTC)
@@ -25,23 +26,24 @@ def payment_repo() -> FakePaymentRepository:
 def payment_use_case(
   expense_repo: FakeExpenseRepository, payment_repo: FakePaymentRepository
 ) -> RegisterPaymentUseCase:
-  return RegisterPaymentUseCase(expense_repo=expense_repo, payment_repo=payment_repo, clock=lambda: FIXED_NOW)
+  return RegisterPaymentUseCase(expense_repo=expense_repo, payment_repo=payment_repo)
 
 
 async def _seed_expense(expense_repo: FakeExpenseRepository, expense_id: str = "exp-1") -> None:
-  use_case = AddExpenseUseCase(expense_repo=expense_repo, clock=lambda: FIXED_NOW, id_generator=lambda: expense_id)
-  await use_case.execute(
+  expense = Expense(
+    id=expense_id,
     guild_id="g1",
     channel_id="c1",
     category="Food",
     description="Pizza",
     value=Decimal("90.00"),
-    author_id="user1",
-    channel_members=["user1", "user2", "user3"],
     paying_person="user1",
     involved_people=["user1", "user2", "user3"],
     destination_month="2025-05",
+    created_at=FIXED_NOW,
+    updated_at=FIXED_NOW,
   )
+  await expense_repo.save(expense)
 
 
 @pytest.mark.asyncio
@@ -100,5 +102,6 @@ async def test_payments_use_correct_timestamp(
   expense_repo: FakeExpenseRepository, payment_use_case: RegisterPaymentUseCase
 ) -> None:
   await _seed_expense(expense_repo)
-  payments = await payment_use_case.execute(guild_id="g1", month="2025-05")
+  with patch.object(payment_use_case, "_utcnow", return_value=FIXED_NOW):
+    payments = await payment_use_case.execute(guild_id="g1", month="2025-05")
   assert all(p.paid_at == FIXED_NOW for p in payments)

@@ -1,5 +1,3 @@
-import uuid
-from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
 
@@ -8,18 +6,12 @@ from domain.errors import ExpenseNotFoundError, InvalidExpenseValueError, NoEdit
 from repositories.protocols import ExpenseRepository
 
 
-def _utcnow() -> datetime:
-  return datetime.now(UTC)
-
-
 class EditExpenseUseCase:
-  def __init__(
-    self,
-    expense_repo: ExpenseRepository,
-    clock: Callable[[], datetime] = _utcnow,
-  ) -> None:
+  def __init__(self, expense_repo: ExpenseRepository) -> None:
     self._repo = expense_repo
-    self._clock = clock
+
+  def _utcnow(self) -> datetime:
+    return datetime.now(UTC)
 
   async def execute(
     self,
@@ -57,7 +49,7 @@ class EditExpenseUseCase:
 
     for field, val in updates.items():
       setattr(expense, field, val)
-    expense.updated_at = self._clock()
+    expense.updated_at = self._utcnow()
 
     await self._repo.update(expense)
     return expense

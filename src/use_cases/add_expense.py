@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
 
@@ -9,24 +8,15 @@ from domain.errors import InvalidExpenseValueError
 from repositories.protocols import ExpenseRepository
 
 
-def _utcnow() -> datetime:
-  return datetime.now(UTC)
-
-
-def _new_id() -> str:
-  return str(ULID())
-
-
 class AddExpenseUseCase:
-  def __init__(
-    self,
-    expense_repo: ExpenseRepository,
-    clock: Callable[[], datetime] = _utcnow,
-    id_generator: Callable[[], str] = _new_id,
-  ) -> None:
+  def __init__(self, expense_repo: ExpenseRepository) -> None:
     self._repo = expense_repo
-    self._clock = clock
-    self._id_generator = id_generator
+
+  def _utcnow(self) -> datetime:
+    return datetime.now(UTC)
+
+  def _new_id(self) -> str:
+    return str(ULID())
 
   async def execute(
     self,
@@ -45,9 +35,9 @@ class AddExpenseUseCase:
     if value <= 0:
       raise InvalidExpenseValueError(value)
 
-    now = self._clock()
+    now = self._utcnow()
     expense = Expense(
-      id=self._id_generator(),
+      id=self._new_id(),
       guild_id=guild_id,
       channel_id=channel_id,
       category=category,

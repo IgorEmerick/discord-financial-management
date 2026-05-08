@@ -3,15 +3,38 @@ from decimal import Decimal
 
 import pytest
 
+from domain.entities import Expense
 from fakes.repositories import FakeExpenseRepository, FakePaymentRepository
-from use_cases.add_expense import AddExpenseUseCase
 from use_cases.generate_report import GenerateReportUseCase
 
 FIXED_NOW = datetime(2025, 5, 7, 10, 0, 0, tzinfo=UTC)
 
 
-def _add_use_case(repo: FakeExpenseRepository, expense_id: str) -> AddExpenseUseCase:
-  return AddExpenseUseCase(expense_repo=repo, clock=lambda: FIXED_NOW, id_generator=lambda: expense_id)
+async def _seed_expense(
+  repo: FakeExpenseRepository,
+  *,
+  expense_id: str,
+  guild_id: str = "g1",
+  value: Decimal,
+  paying_person: str,
+  involved_people: list[str],
+  destination_month: str = "2025-05",
+) -> None:
+  await repo.save(
+    Expense(
+      id=expense_id,
+      guild_id=guild_id,
+      channel_id="c1",
+      category="Food",
+      description="Pizza",
+      value=value,
+      paying_person=paying_person,
+      involved_people=involved_people,
+      destination_month=destination_month,
+      created_at=FIXED_NOW,
+      updated_at=FIXED_NOW,
+    )
+  )
 
 
 @pytest.fixture
@@ -41,17 +64,12 @@ async def test_empty_month_returns_empty_report(report_use_case: GenerateReportU
 async def test_single_expense_splits_equally(
   expense_repo: FakeExpenseRepository, report_use_case: GenerateReportUseCase
 ) -> None:
-  await _add_use_case(expense_repo, "exp-1").execute(
-    guild_id="g1",
-    channel_id="c1",
-    category="Food",
-    description="Pizza",
+  await _seed_expense(
+    expense_repo,
+    expense_id="exp-1",
     value=Decimal("90.00"),
-    author_id="user1",
-    channel_members=["user1", "user2", "user3"],
     paying_person="user1",
     involved_people=["user1", "user2", "user3"],
-    destination_month="2025-05",
   )
 
   report = await report_use_case.execute(guild_id="g1", month="2025-05")
@@ -66,17 +84,12 @@ async def test_single_expense_splits_equally(
 async def test_settlements_zero_out_all_balances(
   expense_repo: FakeExpenseRepository, report_use_case: GenerateReportUseCase
 ) -> None:
-  await _add_use_case(expense_repo, "exp-1").execute(
-    guild_id="g1",
-    channel_id="c1",
-    category="Food",
-    description="Pizza",
+  await _seed_expense(
+    expense_repo,
+    expense_id="exp-1",
     value=Decimal("90.00"),
-    author_id="user1",
-    channel_members=["user1", "user2", "user3"],
     paying_person="user1",
     involved_people=["user1", "user2", "user3"],
-    destination_month="2025-05",
   )
 
   report = await report_use_case.execute(guild_id="g1", month="2025-05")
@@ -93,15 +106,13 @@ async def test_settlements_zero_out_all_balances(
 async def test_excludes_expenses_from_other_guilds(
   expense_repo: FakeExpenseRepository, report_use_case: GenerateReportUseCase
 ) -> None:
-  await _add_use_case(expense_repo, "exp-1").execute(
+  await _seed_expense(
+    expense_repo,
+    expense_id="exp-1",
     guild_id="other-guild",
-    channel_id="c1",
-    category="Food",
-    description="Pizza",
     value=Decimal("50.00"),
-    author_id="user1",
-    channel_members=["user1"],
-    destination_month="2025-05",
+    paying_person="user1",
+    involved_people=["user1"],
   )
 
   report = await report_use_case.execute(guild_id="g1", month="2025-05")
@@ -112,14 +123,12 @@ async def test_excludes_expenses_from_other_guilds(
 async def test_excludes_expenses_from_other_months(
   expense_repo: FakeExpenseRepository, report_use_case: GenerateReportUseCase
 ) -> None:
-  await _add_use_case(expense_repo, "exp-1").execute(
-    guild_id="g1",
-    channel_id="c1",
-    category="Food",
-    description="Pizza",
+  await _seed_expense(
+    expense_repo,
+    expense_id="exp-1",
     value=Decimal("50.00"),
-    author_id="user1",
-    channel_members=["user1"],
+    paying_person="user1",
+    involved_people=["user1"],
     destination_month="2025-04",
   )
 
