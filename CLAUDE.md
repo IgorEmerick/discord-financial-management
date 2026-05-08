@@ -106,4 +106,3 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 ## Notes
 
 - The full technical spec (requirements, data contracts, sequence diagrams) lives in `project-definition.md`.
-- This project is in early development; no source files or dependency manifest exist yet.
