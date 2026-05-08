@@ -1,6 +1,7 @@
-import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
+
+from ulid import ULID
 
 from domain.entities import Payment
 from domain.errors import NothingToSettleError
@@ -13,7 +14,7 @@ def _utcnow() -> datetime:
 
 
 def _new_id() -> str:
-  return str(uuid.uuid4())
+  return str(ULID())
 
 
 class RegisterPaymentUseCase:
