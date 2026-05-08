@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 
 from domain.errors import NothingToSettleError
-from tests.fakes.repositories import FakeExpenseRepository, FakePaymentRepository
+from fakes.repositories import FakeExpenseRepository, FakePaymentRepository
 from use_cases.add_expense import AddExpenseUseCase
 from use_cases.register_payment import RegisterPaymentUseCase
 

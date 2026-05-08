@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 
 from domain.errors import InvalidExpenseValueError
-from tests.fakes.repositories import FakeExpenseRepository
+from fakes.repositories import FakeExpenseRepository
 from use_cases.add_expense import AddExpenseUseCase
 
 FIXED_NOW = datetime(2025, 5, 7, 21, 0, 0, tzinfo=UTC)
