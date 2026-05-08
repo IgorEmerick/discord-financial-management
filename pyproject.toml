@@ -1,0 +1,10 @@
+[tool.ruff]
+indent-width = 2
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.format]
+indent-style = "space"
+indent-width = 2

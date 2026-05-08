@@ -13,6 +13,16 @@ source .venv/bin/activate
 pip install -r requirements.txt   # once requirements.txt exists
 ```
 
+## Lint & Format
+
+```bash
+ruff check .        # lint
+ruff check . --fix  # lint with auto-fix
+ruff format .       # format
+```
+
+Indent width is 2 spaces, line length is 120.
+
 ## Environment
 
 The `.gitignore` excludes `.env` and `.envrc` — use one of these for Discord bot tokens and other secrets.
