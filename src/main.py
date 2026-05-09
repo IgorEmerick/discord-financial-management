@@ -26,7 +26,8 @@ class _ExpenseBot(commands.Bot):
     logger.info("Slash commands synced")
 
   async def on_ready(self) -> None:
-    logger.info("Logged in as %s (id=%s)", self.user, self.user.id)
+    if self.user:
+      logger.info("Logged in as %s (id=%s)", self.user, self.user.id)
 
 
 async def _run(token: str, database_url: str) -> None:
