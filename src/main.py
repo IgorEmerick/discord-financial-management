@@ -32,12 +32,17 @@ class _ExpenseBot(commands.Bot):
 async def _run(token: str, database_url: str) -> None:
   container = Container()
   container.config.database_url.from_value(database_url)
-  await container.init_resources()
+
+  init = container.init_resources()
+  if init is not None:
+    await init
 
   try:
     await _ExpenseBot(container).start(token)
   finally:
-    await container.shutdown_resources()
+    shutdown = container.shutdown_resources()
+    if shutdown is not None:
+      await shutdown
 
 
 def main() -> None:
