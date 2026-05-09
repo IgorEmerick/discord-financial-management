@@ -13,6 +13,12 @@ A Discord bot for shared expense management. Groups — roommates, travel compan
 
 ## User Manual
 
+### Add to your server
+
+[Click here to invite the bot](https://discord.com/oauth2/authorize?client_id=1502428671531679816&scope=bot+applications.commands&permissions=19456) to your Discord server.
+
+---
+
 ### How it works
 
 Add your shared expenses to a channel as they happen. At the end of the month, run `/report` to see who owes what, then use `/pay` to record the settlements.
