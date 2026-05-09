@@ -49,7 +49,7 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 |---------|---------|-------|
 | Discord Gateway (WebSocket) | `DISCORD_BOT_TOKEN` | Intents: `GUILDS`, `GUILD_MEMBERS`, `GUILD_MESSAGES` |
 | Discord REST API v10 | `DISCORD_BOT_TOKEN` | Used to fetch channel members |
-| PostgreSQL | `DATABASE_URL` | Requires connection pooling in production |
+| PostgreSQL | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_HOST`, `POSTGRES_PORT` | DSN is built at startup; requires connection pooling in production |
 
 ## Setup
 
@@ -63,11 +63,16 @@ python src/main.py
 
 **Docker:**
 ```bash
-cp .env.example .env   # then fill in DISCORD_BOT_TOKEN (DATABASE_URL is overridden by compose)
+cp .env.example .env   # then fill in DISCORD_BOT_TOKEN and POSTGRES_PASSWORD
 docker compose up --build
 ```
 
-The compose stack runs two services: `app` (the bot) and `db` (PostgreSQL 16). The `DATABASE_URL` in `.env` is ignored by compose — it uses the internal `db` service URL instead. The app waits for the database health check before starting.
+The compose stack runs two services: `app` (the bot) and `db` (PostgreSQL 16). The app builds its DSN from the `POSTGRES_*` environment variables; `POSTGRES_HOST` is set to `db` (the internal service name) by compose. The app waits for the database health check before starting.
+
+For production, create a `.env.prod` file and run:
+```bash
+docker compose --env-file .env.prod up -d
+```
 
 ## Lint & Format
 
@@ -89,7 +94,7 @@ pytest
 
 ## Environment
 
-Use `.env` or `.envrc` for secrets — both are gitignored. Required vars: `DISCORD_BOT_TOKEN`, `DATABASE_URL`.
+Use `.env` or `.envrc` for secrets — both are gitignored. Required vars: `DISCORD_BOT_TOKEN`, `POSTGRES_PASSWORD`. Optional vars with defaults: `POSTGRES_USER` (postgres), `POSTGRES_DB` (expenses), `POSTGRES_HOST` (localhost), `POSTGRES_PORT` (5432).
 
 ## Commit Messages
 
