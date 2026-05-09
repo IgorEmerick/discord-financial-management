@@ -53,7 +53,12 @@ async def _run(token: str, database_url: str) -> None:
 def main() -> None:
   load_dotenv()
   token = os.environ["DISCORD_BOT_TOKEN"]
-  database_url = os.environ["DATABASE_URL"]
+  pg_user = os.environ.get("POSTGRES_USER", "postgres")
+  pg_password = os.environ["POSTGRES_PASSWORD"]
+  pg_host = os.environ.get("POSTGRES_HOST", "localhost")
+  pg_port = os.environ.get("POSTGRES_PORT", "5432")
+  pg_db = os.environ.get("POSTGRES_DB", "expenses")
+  database_url = f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}"
   asyncio.run(_run(token, database_url))
 
 
