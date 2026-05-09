@@ -146,7 +146,7 @@ pip install -r requirements.lock
 
 # 3. Configure environment
 cp .env.example .env
-# Edit .env and fill in DISCORD_BOT_TOKEN and DATABASE_URL
+# Edit .env and fill in DISCORD_BOT_TOKEN and POSTGRES_PASSWORD
 
 # 4. Start the bot
 python src/main.py
@@ -156,16 +156,33 @@ python src/main.py
 
 ### Running with Docker
 
-Only `DISCORD_BOT_TOKEN` is needed in `.env` — `DATABASE_URL` is handled internally by Docker Compose.
-
 ```bash
 cp .env.example .env
-# Edit .env and fill in DISCORD_BOT_TOKEN
+# Edit .env and fill in DISCORD_BOT_TOKEN and POSTGRES_PASSWORD
 
 docker compose up --build
 ```
 
-This starts two services: `app` (the bot) and `db` (PostgreSQL 16). The app waits for the database health check before connecting.
+This starts two services: `app` (the bot) and `db` (PostgreSQL 16). The app builds its database connection from the `POSTGRES_*` variables; `POSTGRES_HOST` is set to the internal `db` service by Compose. The app waits for the database health check before connecting.
+
+---
+
+### Running in production
+
+Create a `.env.prod` file with your production credentials (it is gitignored):
+
+```bash
+DISCORD_BOT_TOKEN=your-production-token
+POSTGRES_PASSWORD=strong-password
+POSTGRES_USER=postgres       # optional, default: postgres
+POSTGRES_DB=expenses         # optional, default: expenses
+```
+
+Then deploy with:
+
+```bash
+docker compose --env-file .env.prod up -d
+```
 
 ---
 
@@ -230,9 +247,13 @@ ruff format .       # format
 
 ### Environment variables
 
-| Variable | Description |
-|----------|-------------|
-| `DISCORD_BOT_TOKEN` | Bot token from the Discord Developer Portal |
-| `DATABASE_URL` | PostgreSQL connection string, e.g. `postgresql://user:password@localhost:5432/dbname` |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DISCORD_BOT_TOKEN` | ✅ | — | Bot token from the Discord Developer Portal |
+| `POSTGRES_PASSWORD` | ✅ | — | PostgreSQL password |
+| `POSTGRES_USER` | ➖ | `postgres` | PostgreSQL user |
+| `POSTGRES_DB` | ➖ | `expenses` | PostgreSQL database name |
+| `POSTGRES_HOST` | ➖ | `localhost` | PostgreSQL host (set to `db` automatically by Compose) |
+| `POSTGRES_PORT` | ➖ | `5432` | PostgreSQL port |
 
-Copy `.env.example` to `.env` and fill in the values. Both `.env` and `.envrc` are gitignored.
+Copy `.env.example` to `.env` and fill in the required values. Both `.env`, `.env.prod`, and `.envrc` are gitignored.
