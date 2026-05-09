@@ -3,11 +3,13 @@ import logging
 import os
 
 import discord
+from dependency_injector import providers
 from discord.ext import commands
 from dotenv import load_dotenv
 
 from bot.expense_cog import ExpensesCog
 from container import Container
+from db.pool import create_pool
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -39,19 +41,13 @@ class _ExpenseBot(commands.Bot):
 
 
 async def _run(token: str, database_url: str) -> None:
-  container = Container()
-  container.config.database_url.from_value(database_url)
-
-  init = container.init_resources()
-  if init is not None:
-    await init
-
+  pool = await create_pool(database_url)
   try:
+    container = Container()
+    container.pool.override(providers.Object(pool))
     await _ExpenseBot(container).start(token)
   finally:
-    shutdown = container.shutdown_resources()
-    if shutdown is not None:
-      await shutdown
+    await pool.close()
 
 
 def main() -> None:

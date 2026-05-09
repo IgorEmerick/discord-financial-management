@@ -1,6 +1,5 @@
 from dependency_injector import containers, providers
 
-from db.pool import create_pool
 from repositories.postgres.postgres_expense_repository import PostgresExpenseRepository
 from repositories.postgres.postgres_payment_repository import PostgresPaymentRepository
 from use_cases.add_expense import AddExpenseUseCase
@@ -10,16 +9,8 @@ from use_cases.generate_report import GenerateReportUseCase
 from use_cases.register_payment import RegisterPaymentUseCase
 
 
-async def _pool_resource(database_url: str):
-  pool = await create_pool(database_url)
-  yield pool
-  await pool.close()
-
-
 class Container(containers.DeclarativeContainer):
-  config = providers.Configuration()
-
-  pool = providers.Resource(_pool_resource, database_url=config.database_url)
+  pool = providers.Dependency()
 
   expense_repo = providers.Singleton(PostgresExpenseRepository, pool=pool)
   payment_repo = providers.Singleton(PostgresPaymentRepository, pool=pool)
