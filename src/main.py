@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from bot.expense_cog import ExpensesCog
 from container import Container
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -21,7 +22,14 @@ class _ExpenseBot(commands.Bot):
     self._container = container
 
   async def setup_hook(self) -> None:
-    await self.add_cog(self._container.cog())
+    cog = ExpensesCog(
+      add_expense_uc=self._container.add_expense_uc(),
+      edit_expense_uc=self._container.edit_expense_uc(),
+      delete_expense_uc=self._container.delete_expense_uc(),
+      generate_report_uc=self._container.generate_report_uc(),
+      register_payment_uc=self._container.register_payment_uc(),
+    )
+    await self.add_cog(cog)
     await self.tree.sync()
     logger.info("Slash commands synced")
 

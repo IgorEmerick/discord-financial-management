@@ -1,6 +1,5 @@
 from dependency_injector import containers, providers
 
-from bot.expense_cog import ExpensesCog
 from db.pool import create_pool
 from repositories.postgres.postgres_expense_repository import PostgresExpenseRepository
 from repositories.postgres.postgres_payment_repository import PostgresPaymentRepository
@@ -38,13 +37,4 @@ class Container(containers.DeclarativeContainer):
     RegisterPaymentUseCase,
     expense_repo=expense_repo,
     payment_repo=payment_repo,
-  )
-
-  cog = providers.Singleton(
-    ExpensesCog,
-    add_expense_uc=add_expense_uc,
-    edit_expense_uc=edit_expense_uc,
-    delete_expense_uc=delete_expense_uc,
-    generate_report_uc=generate_report_uc,
-    register_payment_uc=register_payment_uc,
   )
