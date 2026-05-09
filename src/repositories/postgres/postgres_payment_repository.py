@@ -16,15 +16,21 @@ class PostgresPaymentRepository:
         INSERT INTO payments (id, guild_id, month, creditor, debtor, amount, paid_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         """,
-        payment.id, payment.guild_id, payment.month,
-        payment.creditor, payment.debtor, payment.amount, payment.paid_at,
+        payment.id,
+        payment.guild_id,
+        payment.month,
+        payment.creditor,
+        payment.debtor,
+        payment.amount,
+        payment.paid_at,
       )
 
   async def find_by_month(self, guild_id: str, month: str) -> list[Payment]:
     async with self._pool.acquire() as conn:
       rows = await conn.fetch(
         "SELECT * FROM payments WHERE guild_id = $1 AND month = $2 ORDER BY paid_at",
-        guild_id, month,
+        guild_id,
+        month,
       )
     return [_to_payment(r) for r in rows]
 

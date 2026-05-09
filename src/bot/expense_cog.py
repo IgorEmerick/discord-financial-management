@@ -81,13 +81,22 @@ class ExpensesCog(commands.Cog):
 
     logger.info(
       "add-expense guild=%s channel=%s author=%s category=%r value=%s payer=%s participants=%s month=%s",
-      guild_id, channel_id, author_id, category, value, resolved_payer, resolved_participants, month,
+      guild_id,
+      channel_id,
+      author_id,
+      category,
+      value,
+      resolved_payer,
+      resolved_participants,
+      month,
     )
 
     try:
       parsed_value = Decimal(value)
     except InvalidOperation:
-      await interaction.followup.send(embed=embeds.error("Invalid Value", f"`{value}` is not a valid number."))
+      await interaction.followup.send(
+        embed=embeds.error("Invalid Value", f"`{value}` is not a valid number. Use a decimal like `85.50` or `120`.")
+      )
       return
 
     try:
@@ -140,7 +149,14 @@ class ExpensesCog(commands.Cog):
 
     logger.info(
       "edit-expense guild=%s author=%s id=%s category=%r value=%s payer=%s participants=%s month=%s",
-      guild_id, interaction.user.id, expense_id, category, value, resolved_payer, resolved_participants, month,
+      guild_id,
+      interaction.user.id,
+      expense_id,
+      category,
+      value,
+      resolved_payer,
+      resolved_participants,
+      month,
     )
 
     parsed_value: Decimal | None = None
@@ -148,7 +164,9 @@ class ExpensesCog(commands.Cog):
       try:
         parsed_value = Decimal(value)
       except InvalidOperation:
-        await interaction.followup.send(embed=embeds.error("Invalid Value", f"`{value}` is not a valid number."))
+        await interaction.followup.send(
+          embed=embeds.error("Invalid Value", f"`{value}` is not a valid number. Use a decimal like `85.50` or `120`.")
+        )
         return
 
     try:
@@ -228,7 +246,11 @@ class ExpensesCog(commands.Cog):
     resolved_debtor = str(debtor.id) if debtor else None
     logger.info(
       "pay guild=%s author=%s creditor=%s debtor=%s month=%s",
-      guild_id, interaction.user.id, resolved_creditor, resolved_debtor, resolved_month,
+      guild_id,
+      interaction.user.id,
+      resolved_creditor,
+      resolved_debtor,
+      resolved_month,
     )
 
     try:

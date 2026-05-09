@@ -18,10 +18,17 @@ class PostgresExpenseRepository:
            paying_person, involved_people, destination_month, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         """,
-        expense.id, expense.guild_id, expense.channel_id,
-        expense.category, expense.description, expense.value,
-        expense.paying_person, expense.involved_people,
-        expense.destination_month, expense.created_at, expense.updated_at,
+        expense.id,
+        expense.guild_id,
+        expense.channel_id,
+        expense.category,
+        expense.description,
+        expense.value,
+        expense.paying_person,
+        expense.involved_people,
+        expense.destination_month,
+        expense.created_at,
+        expense.updated_at,
       )
 
   async def find_by_id(self, expense_id: str) -> Expense | None:
@@ -33,7 +40,8 @@ class PostgresExpenseRepository:
     async with self._pool.acquire() as conn:
       rows = await conn.fetch(
         "SELECT * FROM expenses WHERE guild_id = $1 AND destination_month = $2 ORDER BY created_at",
-        guild_id, month,
+        guild_id,
+        month,
       )
     return [_to_expense(r) for r in rows]
 
@@ -47,9 +55,13 @@ class PostgresExpenseRepository:
           destination_month = $6, updated_at = $7
         WHERE id = $8
         """,
-        expense.category, expense.description, expense.value,
-        expense.paying_person, expense.involved_people,
-        expense.destination_month, expense.updated_at,
+        expense.category,
+        expense.description,
+        expense.value,
+        expense.paying_person,
+        expense.involved_people,
+        expense.destination_month,
+        expense.updated_at,
         expense.id,
       )
 

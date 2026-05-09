@@ -44,8 +44,7 @@ def monthly_report(report: Report) -> discord.Embed:
 
   if report.expenses:
     lines = [
-      f"`{e.id[:10]}…` **{e.description}** — ${e.value:.2f} (paid by <@{e.paying_person}>)"
-      for e in report.expenses
+      f"`{e.id[:10]}…` **{e.description}** — ${e.value:.2f} (paid by <@{e.paying_person}>)" for e in report.expenses
     ]
     embed.add_field(name="Expenses", value="\n".join(lines), inline=False)
   else:
