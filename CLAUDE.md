@@ -13,7 +13,8 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 | `/add-expense` | Register a shared expense (category, description, value, payer, participants, month) |
 | `/edit-expense` | Edit any field of a previously registered expense by its ID |
 | `/delete-expense` | Delete a previously registered expense by its ID |
-| `/report` | Generate a monthly report with itemized expenses and creditor/debtor balances |
+| `/report` | Generate a monthly report with per-person balances and recommended settlements (no expense list) |
+| `/expenses` | Export all expenses for a month as a `.txt` or `.csv` file attachment |
 | `/pay` | Register a payment between a creditor and debtor; if both are omitted, settles all outstanding balances for the month |
 | `/help` | Display all available commands with descriptions, parameters, and usage examples (stateless, no DB access) |
 
