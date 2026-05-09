@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS expenses (
-  id                TEXT          PRIMARY KEY,
-  guild_id          TEXT          NOT NULL,
-  channel_id        TEXT          NOT NULL,
-  category          TEXT          NOT NULL,
+  id                VARCHAR(26)   PRIMARY KEY,
+  guild_id          VARCHAR(20)   NOT NULL,
+  channel_id        VARCHAR(20)   NOT NULL,
+  category          VARCHAR(100)  NOT NULL,
   description       TEXT          NOT NULL,
   value             NUMERIC(12,2) NOT NULL,
-  paying_person     TEXT          NOT NULL,
-  involved_people   TEXT[]        NOT NULL,
-  destination_month TEXT          NOT NULL,
+  paying_person     VARCHAR(20)   NOT NULL,
+  involved_people   VARCHAR(20)[] NOT NULL,
+  destination_month VARCHAR(7)    NOT NULL,
   created_at        TIMESTAMPTZ   NOT NULL,
   updated_at        TIMESTAMPTZ   NOT NULL
 );
@@ -15,11 +15,11 @@ CREATE TABLE IF NOT EXISTS expenses (
 CREATE INDEX IF NOT EXISTS expenses_guild_month ON expenses (guild_id, destination_month);
 
 CREATE TABLE IF NOT EXISTS payments (
-  id        TEXT          PRIMARY KEY,
-  guild_id  TEXT          NOT NULL,
-  month     TEXT          NOT NULL,
-  creditor  TEXT          NOT NULL,
-  debtor    TEXT          NOT NULL,
+  id        VARCHAR(26)   PRIMARY KEY,
+  guild_id  VARCHAR(20)   NOT NULL,
+  month     VARCHAR(7)    NOT NULL,
+  creditor  VARCHAR(20)   NOT NULL,
+  debtor    VARCHAR(20)   NOT NULL,
   amount    NUMERIC(12,2) NOT NULL,
   paid_at   TIMESTAMPTZ   NOT NULL
 );
