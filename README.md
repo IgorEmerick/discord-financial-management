@@ -87,7 +87,7 @@ Delete a previously registered expense by its ID.
 ---
 
 #### `/report`
-Generate a monthly financial report showing all expenses, per-person balances, and recommended payments to settle all debts.
+Generate a monthly financial report showing per-person balances and recommended payments to settle all debts.
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
@@ -97,6 +97,23 @@ Generate a monthly financial report showing all expenses, per-person balances, a
 ```
 /report
 /report month:2025-04
+```
+
+---
+
+#### `/expenses`
+Export all expenses for a month as a file attachment. Defaults to `.txt`; pass `format:csv` to get a `.csv` file instead.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `month` | ➖ | Month in `YYYY-MM` format — defaults to the current month |
+| `format` | ➖ | File format: `txt` (default) or `csv` |
+
+**Example:**
+```
+/expenses
+/expenses month:2025-04
+/expenses month:2025-04 format:csv
 ```
 
 ---
@@ -201,6 +218,7 @@ src/
   bot/
     expense_cog.py               # Discord slash command handlers
     embeds.py                    # Discord embed builders
+    files.py                     # File attachment generators (TXT, CSV)
   db/
     pool.py                      # asyncpg connection pool + schema init
     schema.sql                   # Table definitions
@@ -218,6 +236,7 @@ src/
     edit_expense.py
     delete_expense.py
     generate_report.py
+    list_expenses.py
     register_payment.py
 tests/
   fakes/
