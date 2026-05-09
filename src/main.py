@@ -29,6 +29,7 @@ class _ExpenseBot(commands.Bot):
       edit_expense_uc=self._container.edit_expense_uc(),
       delete_expense_uc=self._container.delete_expense_uc(),
       generate_report_uc=self._container.generate_report_uc(),
+      list_expenses_uc=self._container.list_expenses_uc(),
       register_payment_uc=self._container.register_payment_uc(),
     )
     await self.add_cog(cog)

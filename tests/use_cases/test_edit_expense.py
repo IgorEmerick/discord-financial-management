@@ -3,10 +3,10 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from fakes.repositories import FakeExpenseRepository
 
 from domain.entities import Expense
 from domain.errors import ExpenseNotFoundError, InvalidExpenseValueError, NoEditFieldsProvidedError
-from fakes.repositories import FakeExpenseRepository
 from use_cases.edit_expense import EditExpenseUseCase
 
 CREATED_AT = datetime(2025, 5, 7, 10, 0, 0, tzinfo=UTC)

@@ -42,25 +42,20 @@ def expense_deleted(expense_id: str) -> discord.Embed:
 def monthly_report(report: Report) -> discord.Embed:
   embed = discord.Embed(title=f"Report — {report.month}", color=_BLUE)
 
-  if report.expenses:
-    lines = [
-      f"`{e.id[:10]}…` **{e.description}** — ${e.value:.2f} (paid by <@{e.paying_person}>)" for e in report.expenses
-    ]
-    embed.add_field(name="Expenses", value="\n".join(lines), inline=False)
-  else:
-    embed.add_field(name="Expenses", value="No expenses this month.", inline=False)
-
   if report.balances:
     lines = []
     for b in report.balances:
       label = f"owes ${abs(b.net):.2f}" if b.net < Decimal(0) else f"is owed ${b.net:.2f}"
       lines.append(f"<@{b.user_id}> {label}")
     embed.add_field(name="Balances", value="\n".join(lines), inline=False)
+  else:
+    embed.add_field(name="Balances", value="No balances this month.", inline=False)
 
   if report.settlements:
     lines = [f"<@{s.debtor}> → <@{s.creditor}>: ${s.amount:.2f}" for s in report.settlements]
     embed.add_field(name="Recommended Settlements", value="\n".join(lines), inline=False)
 
+  embed.set_footer(text="Use /expenses to see the full expense list.")
   return embed
 
 

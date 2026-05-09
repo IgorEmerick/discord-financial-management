@@ -2,10 +2,10 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
+from fakes.repositories import FakeExpenseRepository
 
 from domain.entities import Expense
 from domain.errors import ExpenseNotFoundError
-from fakes.repositories import FakeExpenseRepository
 from use_cases.delete_expense import DeleteExpenseUseCase
 
 FIXED_NOW = datetime(2025, 5, 7, 10, 0, 0, tzinfo=UTC)

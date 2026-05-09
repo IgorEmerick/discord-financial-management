@@ -2,9 +2,9 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
+from fakes.repositories import FakeExpenseRepository, FakePaymentRepository
 
 from domain.entities import Expense
-from fakes.repositories import FakeExpenseRepository, FakePaymentRepository
 from use_cases.generate_report import GenerateReportUseCase
 
 FIXED_NOW = datetime(2025, 5, 7, 10, 0, 0, tzinfo=UTC)

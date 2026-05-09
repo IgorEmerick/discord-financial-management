@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import embeds
+from bot import embeds, files
 from domain.errors import (
   ExpenseNotFoundError,
   InvalidExpenseValueError,
@@ -18,6 +18,7 @@ from use_cases.add_expense import AddExpenseUseCase
 from use_cases.delete_expense import DeleteExpenseUseCase
 from use_cases.edit_expense import EditExpenseUseCase
 from use_cases.generate_report import GenerateReportUseCase
+from use_cases.list_expenses import ListExpensesUseCase
 from use_cases.register_payment import RegisterPaymentUseCase
 
 logger = logging.getLogger(__name__)
@@ -32,12 +33,14 @@ class ExpensesCog(commands.Cog):
     edit_expense_uc: EditExpenseUseCase,
     delete_expense_uc: DeleteExpenseUseCase,
     generate_report_uc: GenerateReportUseCase,
+    list_expenses_uc: ListExpensesUseCase,
     register_payment_uc: RegisterPaymentUseCase,
   ) -> None:
     self._add_expense = add_expense_uc
     self._edit_expense = edit_expense_uc
     self._delete_expense = delete_expense_uc
     self._generate_report = generate_report_uc
+    self._list_expenses = list_expenses_uc
     self._register_payment = register_payment_uc
 
   def _current_month(self) -> str:
@@ -225,6 +228,44 @@ class ExpensesCog(commands.Cog):
       await interaction.followup.send(
         embed=embeds.error("Error", "Could not generate the report. Please try again later.")
       )
+
+  @app_commands.command(name="expenses", description="Export monthly expenses as a file")
+  @app_commands.describe(
+    month="Month in YYYY-MM format — defaults to current month",
+    format="File format: txt (default) or csv",
+  )
+  @app_commands.choices(
+    format=[
+      app_commands.Choice(name="txt", value="txt"),
+      app_commands.Choice(name="csv", value="csv"),
+    ]
+  )
+  async def expenses(
+    self,
+    interaction: discord.Interaction,
+    month: str | None = None,
+    format: str = "txt",
+  ) -> None:
+    await interaction.response.defer()
+    guild_id = str(interaction.guild_id)
+    resolved_month = month or self._current_month()
+    logger.info("expenses guild=%s author=%s month=%s format=%s", guild_id, interaction.user.id, resolved_month, format)
+
+    try:
+      expense_list = await self._list_expenses.execute(guild_id=guild_id, month=resolved_month)
+      if not expense_list:
+        await interaction.followup.send(embed=embeds.error("No Expenses", f"No expenses found for {resolved_month}."))
+        return
+      if format == "csv":
+        buf = files.expenses_csv(expense_list, resolved_month)
+        filename = f"expenses-{resolved_month}.csv"
+      else:
+        buf = files.expenses_txt(expense_list, resolved_month)
+        filename = f"expenses-{resolved_month}.txt"
+      await interaction.followup.send(file=discord.File(buf, filename=filename))
+    except Exception:
+      logger.exception("expenses failed")
+      await interaction.followup.send(embed=embeds.error("Error", "Could not export expenses. Please try again later."))
 
   @app_commands.command(name="pay", description="Register a payment to settle balances")
   @app_commands.describe(

@@ -3,9 +3,9 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from fakes.repositories import FakeExpenseRepository
 
 from domain.errors import InvalidExpenseValueError
-from fakes.repositories import FakeExpenseRepository
 from use_cases.add_expense import AddExpenseUseCase
 
 FIXED_NOW = datetime(2025, 5, 7, 21, 0, 0, tzinfo=UTC)
@@ -24,7 +24,10 @@ def use_case(repo: FakeExpenseRepository) -> AddExpenseUseCase:
 
 @pytest.mark.asyncio
 async def test_add_expense_with_all_fields(use_case: AddExpenseUseCase, repo: FakeExpenseRepository) -> None:
-  with patch.object(use_case, "_utcnow", return_value=FIXED_NOW), patch.object(use_case, "_new_id", return_value=FIXED_ID):
+  with (
+    patch.object(use_case, "_utcnow", return_value=FIXED_NOW),
+    patch.object(use_case, "_new_id", return_value=FIXED_ID),
+  ):
     expense = await use_case.execute(
       guild_id="g1",
       channel_id="c1",

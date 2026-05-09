@@ -6,6 +6,7 @@ from use_cases.add_expense import AddExpenseUseCase
 from use_cases.delete_expense import DeleteExpenseUseCase
 from use_cases.edit_expense import EditExpenseUseCase
 from use_cases.generate_report import GenerateReportUseCase
+from use_cases.list_expenses import ListExpensesUseCase
 from use_cases.register_payment import RegisterPaymentUseCase
 
 
@@ -18,6 +19,8 @@ class Container(containers.DeclarativeContainer):
   add_expense_uc = providers.Factory(AddExpenseUseCase, expense_repo=expense_repo)
   edit_expense_uc = providers.Factory(EditExpenseUseCase, expense_repo=expense_repo)
   delete_expense_uc = providers.Factory(DeleteExpenseUseCase, expense_repo=expense_repo)
+
+  list_expenses_uc = providers.Factory(ListExpensesUseCase, expense_repo=expense_repo)
 
   generate_report_uc = providers.Factory(
     GenerateReportUseCase,

@@ -3,10 +3,10 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from fakes.repositories import FakeExpenseRepository, FakePaymentRepository
 
 from domain.entities import Expense
 from domain.errors import NothingToSettleError
-from fakes.repositories import FakeExpenseRepository, FakePaymentRepository
 from use_cases.register_payment import RegisterPaymentUseCase
 
 FIXED_NOW = datetime(2025, 5, 7, 10, 0, 0, tzinfo=UTC)
