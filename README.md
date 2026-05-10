@@ -102,7 +102,7 @@ Generate a monthly financial report showing per-person balances and recommended 
 ---
 
 #### `/expenses`
-Export all expenses for a month as a file attachment. Defaults to `.txt`; pass `format:csv` to get a `.csv` file instead.
+Export all expenses for a month as a file attachment. Defaults to `.txt`; pass `format:csv` to get a `.csv` file instead. Payer and participant names are resolved to their Discord display names.
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
