@@ -1,3 +1,7 @@
+---
+title: Terms of Service
+---
+
 # Pawments Bot — Terms of Service
 
 _Last updated: 2026-05-10_
@@ -96,5 +100,5 @@ These terms may be updated at any time. Continued use of the bot after changes a
 
 For questions, data deletion requests, or to report abuse:
 
-- **Email:** igorbarbosaemerick@gmail.com
+- **Email:** pawments.bot@gmail.com
 - **Discord:** phobos1261

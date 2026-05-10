@@ -1,3 +1,7 @@
+---
+title: Privacy Policy
+---
+
 # Pawments Bot — Privacy Policy
 
 _Last updated: 2026-05-10_
@@ -107,5 +111,5 @@ This policy may be updated at any time. The _Last updated_ date at the top of th
 
 For privacy-related questions, data deletion requests, or concerns:
 
-- **Email:** igorbarbosaemerick@gmail.com
+- **Email:** pawments.bot@gmail.com
 - **Discord:** phobos1261
