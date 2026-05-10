@@ -3,6 +3,7 @@ from decimal import Decimal
 import discord
 
 from domain.entities import Expense, Payment, Report
+from use_cases.delete_user_data import DeleteUserDataResult
 
 _GREEN = discord.Color.green()
 _RED = discord.Color.red()
@@ -66,6 +67,25 @@ def payments_registered(payments: list[Payment]) -> discord.Embed:
   return embed
 
 
+def delete_my_data_warning() -> discord.Embed:
+  embed = discord.Embed(title="⚠️ Permanent Data Deletion", color=_RED)
+  embed.description = (
+    "This will **permanently delete** all your expenses and payment records in this server.\n\n"
+    "**This action cannot be undone.**\n\n"
+    "Run `/delete-my-data confirm:True` to confirm."
+  )
+  return embed
+
+
+def user_data_deleted(result: DeleteUserDataResult) -> discord.Embed:
+  embed = discord.Embed(title="Data Deleted", color=_GREEN)
+  embed.description = "All your data in this server has been permanently deleted."
+  embed.add_field(name="Expenses removed", value=str(len(result.expenses)))
+  embed.add_field(name="Payments removed", value=str(len(result.payments)))
+  embed.set_footer(text="See the attached file for a full record of what was deleted.")
+  return embed
+
+
 def error(title: str, description: str) -> discord.Embed:
   return discord.Embed(title=title, description=description, color=_RED)
 
@@ -102,10 +122,27 @@ def help_info() -> discord.Embed:
     inline=False,
   )
   embed.add_field(
+    name="/expenses",
+    value=(
+      "Export all expenses for a month as a file attachment.\n"
+      "**Optional:** `month` (defaults to current month), `format` (`txt` or `csv`, defaults to `txt`)"
+    ),
+    inline=False,
+  )
+  embed.add_field(
     name="/pay",
     value=(
       "Register a payment to settle balances.\n"
       "**Optional:** `creditor`, `debtor`, `month` — omit creditor and debtor to settle all outstanding balances"
+    ),
+    inline=False,
+  )
+  embed.add_field(
+    name="/delete-my-data",
+    value=(
+      "⚠️ **Permanently delete** all your expenses and payment records in this server.\n"
+      "**This action cannot be undone.** Pass `confirm:True` to confirm.\n"
+      "**Optional:** `confirm` (default: False)"
     ),
     inline=False,
   )

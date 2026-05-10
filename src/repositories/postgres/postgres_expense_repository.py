@@ -69,6 +69,15 @@ class PostgresExpenseRepository:
     async with self._pool.acquire() as conn:
       await conn.execute("DELETE FROM expenses WHERE id = $1", expense_id)
 
+  async def delete_by_user(self, guild_id: str, user_id: str) -> list[Expense]:
+    async with self._pool.acquire() as conn:
+      rows = await conn.fetch(
+        "DELETE FROM expenses WHERE guild_id = $1 AND (paying_person = $2 OR $2 = ANY(involved_people)) RETURNING *",
+        guild_id,
+        user_id,
+      )
+    return [_to_expense(r) for r in rows]
+
 
 def _to_expense(row: asyncpg.Record) -> Expense:
   return Expense(

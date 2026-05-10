@@ -34,6 +34,15 @@ class PostgresPaymentRepository:
       )
     return [_to_payment(r) for r in rows]
 
+  async def delete_by_user(self, guild_id: str, user_id: str) -> list[Payment]:
+    async with self._pool.acquire() as conn:
+      rows = await conn.fetch(
+        "DELETE FROM payments WHERE guild_id = $1 AND (creditor = $2 OR debtor = $2) RETURNING *",
+        guild_id,
+        user_id,
+      )
+    return [_to_payment(r) for r in rows]
+
 
 def _to_payment(row: asyncpg.Record) -> Payment:
   return Payment(

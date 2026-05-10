@@ -4,6 +4,7 @@ from repositories.postgres.postgres_expense_repository import PostgresExpenseRep
 from repositories.postgres.postgres_payment_repository import PostgresPaymentRepository
 from use_cases.add_expense import AddExpenseUseCase
 from use_cases.delete_expense import DeleteExpenseUseCase
+from use_cases.delete_user_data import DeleteUserDataUseCase
 from use_cases.edit_expense import EditExpenseUseCase
 from use_cases.generate_report import GenerateReportUseCase
 from use_cases.list_expenses import ListExpensesUseCase
@@ -21,6 +22,7 @@ class Container(containers.DeclarativeContainer):
   delete_expense_uc = providers.Factory(DeleteExpenseUseCase, expense_repo=expense_repo)
 
   list_expenses_uc = providers.Factory(ListExpensesUseCase, expense_repo=expense_repo)
+  delete_user_data_uc = providers.Factory(DeleteUserDataUseCase, expense_repo=expense_repo, payment_repo=payment_repo)
 
   generate_report_uc = providers.Factory(
     GenerateReportUseCase,

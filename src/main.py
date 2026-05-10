@@ -31,6 +31,7 @@ class _ExpenseBot(commands.Bot):
       generate_report_uc=self._container.generate_report_uc(),
       list_expenses_uc=self._container.list_expenses_uc(),
       register_payment_uc=self._container.register_payment_uc(),
+      delete_user_data_uc=self._container.delete_user_data_uc(),
     )
     await self.add_cog(cog)
     await self.tree.sync()

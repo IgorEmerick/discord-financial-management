@@ -16,6 +16,7 @@ from domain.errors import (
 )
 from use_cases.add_expense import AddExpenseUseCase
 from use_cases.delete_expense import DeleteExpenseUseCase
+from use_cases.delete_user_data import DeleteUserDataUseCase
 from use_cases.edit_expense import EditExpenseUseCase
 from use_cases.generate_report import GenerateReportUseCase
 from use_cases.list_expenses import ListExpensesUseCase
@@ -35,6 +36,7 @@ class ExpensesCog(commands.Cog):
     generate_report_uc: GenerateReportUseCase,
     list_expenses_uc: ListExpensesUseCase,
     register_payment_uc: RegisterPaymentUseCase,
+    delete_user_data_uc: DeleteUserDataUseCase,
   ) -> None:
     self._add_expense = add_expense_uc
     self._edit_expense = edit_expense_uc
@@ -42,6 +44,7 @@ class ExpensesCog(commands.Cog):
     self._generate_report = generate_report_uc
     self._list_expenses = list_expenses_uc
     self._register_payment = register_payment_uc
+    self._delete_user_data = delete_user_data_uc
 
   def _current_month(self) -> str:
     return datetime.now(UTC).strftime("%Y-%m")
@@ -325,6 +328,43 @@ class ExpensesCog(commands.Cog):
       logger.exception("pay failed")
       await interaction.followup.send(
         embed=embeds.error("Error", "Could not register the payment. Please try again later.")
+      )
+
+  @app_commands.command(name="delete-my-data", description="Permanently delete all your data in this server")
+  @app_commands.describe(confirm="Set to True to confirm — this action cannot be undone")
+  async def delete_my_data(self, interaction: discord.Interaction, confirm: bool = False) -> None:
+    await interaction.response.defer(ephemeral=True)
+    guild_id = str(interaction.guild_id)
+    user_id = str(interaction.user.id)
+    logger.info("delete-my-data guild=%s author=%s confirm=%s", guild_id, user_id, confirm)
+
+    if not confirm:
+      await interaction.followup.send(embed=embeds.delete_my_data_warning(), ephemeral=True)
+      return
+
+    try:
+      result = await self._delete_user_data.execute(guild_id=guild_id, user_id=user_id)
+      all_user_ids: set[str] = set()
+      for e in result.expenses:
+        all_user_ids.add(e.paying_person)
+        all_user_ids.update(e.involved_people)
+      for p in result.payments:
+        all_user_ids.update([p.creditor, p.debtor])
+      guild = interaction.guild
+      user_names = {uid: m.display_name for uid in all_user_ids if guild and (m := guild.get_member(int(uid)))}
+      guild_name = interaction.guild.name if interaction.guild else guild_id
+      user_name = interaction.user.display_name
+      buf = files.deleted_user_data_txt(result.expenses, result.payments, guild_name, user_name, user_names)
+      filename = f"deleted-data-{user_id}.txt"
+      await interaction.followup.send(
+        embed=embeds.user_data_deleted(result),
+        file=discord.File(buf, filename=filename),
+        ephemeral=True,
+      )
+    except Exception:
+      logger.exception("delete-my-data failed")
+      await interaction.followup.send(
+        embed=embeds.error("Error", "Could not delete your data. Please try again later."), ephemeral=True
       )
 
   @app_commands.command(name="help", description="Show all available commands")
