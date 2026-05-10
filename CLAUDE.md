@@ -16,6 +16,7 @@ A Discord bot for shared expense management. Groups (roommates, travel companion
 | `/report` | Generate a monthly report with per-person balances and recommended settlements (no expense list) |
 | `/expenses` | Export all expenses for a month as a `.txt` or `.csv` file attachment |
 | `/pay` | Register a payment between a creditor and debtor; if both are omitted, settles all outstanding balances for the month |
+| `/delete-my-data` | ⚠️ Permanently delete all expenses and payment records for the requester in the current server; requires `confirm:True`; responds with a `.txt` file listing everything deleted |
 | `/help` | Display all available commands with descriptions, parameters, and usage examples (stateless, no DB access) |
 
 ### Field Inference (auto-resolved when omitted)
