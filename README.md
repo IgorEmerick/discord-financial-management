@@ -136,6 +136,26 @@ Record that a payment was made to settle a balance. If creditor and debtor are b
 
 ---
 
+#### `/delete-my-data`
+
+> **⚠️ This action is permanent and cannot be undone.**
+
+Permanently deletes all your expense and payment records in the current server. Responds with a `.txt` file listing everything that was removed, so you have a record before it is gone.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `confirm` | ➖ | Must be set to `True` to execute — defaults to `False` |
+
+If `confirm` is omitted or `False`, the bot shows a warning without deleting anything.
+
+**Example:**
+```
+/delete-my-data                  # shows a warning, nothing is deleted
+/delete-my-data confirm:True     # permanently deletes all your data
+```
+
+---
+
 #### `/help`
 Display all available commands with their parameters. No database access required.
 
@@ -235,6 +255,7 @@ src/
     add_expense.py
     edit_expense.py
     delete_expense.py
+    delete_user_data.py
     generate_report.py
     list_expenses.py
     register_payment.py
