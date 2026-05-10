@@ -55,6 +55,20 @@ class ExpensesCog(commands.Cog):
       return [str(m.id) for m in channel.members if not m.bot]
     return [str(interaction.user.id)]
 
+  def _resolve_user_names(self, interaction: discord.Interaction, expenses: list) -> dict[str, str]:
+    uids: set[str] = set()
+    for e in expenses:
+      uids.add(e.paying_person)
+      uids.update(e.involved_people)
+    names: dict[str, str] = {}
+    guild = interaction.guild
+    for uid in uids:
+      if guild:
+        member = guild.get_member(int(uid))
+        if member:
+          names[uid] = member.display_name
+    return names
+
   @app_commands.command(name="add-expense", description="Register a shared expense")
   @app_commands.describe(
     category="Expense category (e.g. Food, Transport, Utilities)",
@@ -256,11 +270,12 @@ class ExpensesCog(commands.Cog):
       if not expense_list:
         await interaction.followup.send(embed=embeds.error("No Expenses", f"No expenses found for {resolved_month}."))
         return
+      user_names = self._resolve_user_names(interaction, expense_list)
       if format == "csv":
-        buf = files.expenses_csv(expense_list, resolved_month)
+        buf = files.expenses_csv(expense_list, resolved_month, user_names)
         filename = f"expenses-{resolved_month}.csv"
       else:
-        buf = files.expenses_txt(expense_list, resolved_month)
+        buf = files.expenses_txt(expense_list, resolved_month, user_names)
         filename = f"expenses-{resolved_month}.txt"
       await interaction.followup.send(file=discord.File(buf, filename=filename))
     except Exception:
