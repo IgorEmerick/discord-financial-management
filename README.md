@@ -9,6 +9,7 @@ A Discord bot for shared expense management. Groups — roommates, travel compan
 - [User Manual](#user-manual)
 - [Developer Guide](#developer-guide)
 - [Terms of Service](service-terms.md)
+- [Privacy Policy](privacy-policy.md)
 
 ---
 
