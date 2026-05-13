@@ -113,4 +113,4 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 
 ## Notes
 
-- The full technical spec (requirements, data contracts, sequence diagrams) lives in `project-definition.md`.
+- The full technical spec (requirements, data contracts, sequence diagrams) lives in `technical-documentation.md`.
