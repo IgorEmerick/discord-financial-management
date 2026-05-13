@@ -18,6 +18,7 @@ def expenses_txt(expenses: list[Expense], month: str, user_names: dict[str, str]
     buf.write(f"{i}. [{e.category}] {e.description}\n")
     buf.write(f"   Value: ${e.value:.2f} | Paid by: {_name(e.paying_person, names)}\n")
     buf.write(f"   Participants: {participants}\n")
+    buf.write(f"   Added: {e.created_at.strftime('%Y-%m-%d %H:%M UTC')}\n")
     buf.write(f"   ID: {e.id}\n\n")
   return io.BytesIO(buf.getvalue().encode())
 
@@ -42,6 +43,7 @@ def deleted_user_data_txt(
       buf.write(f"{i}. [{e.category}] {e.description} — {e.destination_month}\n")
       buf.write(f"   Value: ${e.value:.2f} | Paid by: {_name(e.paying_person, names)}\n")
       buf.write(f"   Participants: {participants}\n")
+      buf.write(f"   Added: {e.created_at.strftime('%Y-%m-%d %H:%M UTC')}\n")
       buf.write(f"   ID: {e.id}\n\n")
   else:
     buf.write("No expenses found.\n\n")
